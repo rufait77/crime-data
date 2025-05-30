@@ -175,65 +175,67 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Bootstrap JS (Optional for functionality like dropdowns, modals, etc.) -->
     <script src="assets/js/script.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+    <!--Script for Live Search Filter-->
     <script>
-let allCriminalNames = [];
+        let allCriminalNames = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    const input = document.getElementById("searchInput");
-    const box = document.getElementById("suggestionBox");
+        document.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("searchInput");
+            const box = document.getElementById("suggestionBox");
 
-    // Load all names once
-    fetch("get_all_criminal_names.php")
-        .then(res => res.json())
-        .then(data => {
-            allCriminalNames = data;
-        });
+            // Load all names once
+            fetch("get_all_criminal_names.php")
+                .then(res => res.json())
+                .then(data => {
+                    allCriminalNames = data;
+                });
 
-    function showSuggestions(query = "") {
-        const filtered = query
-            ? allCriminalNames.filter(name =>
-                  name.toLowerCase().includes(query.toLowerCase())
-              )
-            : allCriminalNames;
+            function showSuggestions(query = "") {
+                const filtered = query
+                    ? allCriminalNames.filter(name =>
+                        name.toLowerCase().includes(query.toLowerCase())
+                    )
+                    : allCriminalNames;
 
-        box.innerHTML = "";
-        filtered.slice(0, 10).forEach(name => {
-            const item = document.createElement("button");
-            item.classList.add("list-group-item", "list-group-item-action");
-            item.textContent = name;
-            item.addEventListener("click", () => {
-                input.value = name;
                 box.innerHTML = "";
+                filtered.slice(0, 10).forEach(name => {
+                    const item = document.createElement("button");
+                    item.classList.add("list-group-item", "list-group-item-action");
+                    item.textContent = name;
+                    item.addEventListener("click", () => {
+                        input.value = name;
+                        box.innerHTML = "";
 
-                const form = document.createElement("form");
-                form.method = "POST";
-                const hidden = document.createElement("input");
-                hidden.type = "hidden";
-                hidden.name = "name";
-                hidden.value = name;
-                form.appendChild(hidden);
-                document.body.appendChild(form);
-                form.submit();
+                        const form = document.createElement("form");
+                        form.method = "POST";
+                        const hidden = document.createElement("input");
+                        hidden.type = "hidden";
+                        hidden.name = "name";
+                        hidden.value = name;
+                        form.appendChild(hidden);
+                        document.body.appendChild(form);
+                        form.submit();
+                    });
+                    box.appendChild(item);
+                });
+            }
+
+            input.addEventListener("input", () => {
+                showSuggestions(input.value.trim());
             });
-            box.appendChild(item);
+
+            input.addEventListener("focus", () => {
+                showSuggestions(); // show all on focus
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!input.contains(e.target) && !box.contains(e.target)) {
+                    box.innerHTML = "";
+                }
+            });
         });
-    }
-
-    input.addEventListener("input", () => {
-        showSuggestions(input.value.trim());
-    });
-
-    input.addEventListener("focus", () => {
-        showSuggestions(); // show all on focus
-    });
-
-    document.addEventListener("click", (e) => {
-        if (!input.contains(e.target) && !box.contains(e.target)) {
-            box.innerHTML = "";
-        }
-    });
-});
-</script>
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.min.js" integrity="sha384-RuyvpeZCxMJCqVUGFI0Do1mQrods/hhxYlcVfGPOfQtPJh0JCw12tUAZ/Mv10S7D" crossorigin="anonymous"></script>
