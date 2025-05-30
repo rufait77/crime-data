@@ -96,6 +96,7 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </nav>
+    <!-- Navbar Ends -->
 
     <!-- Header with Wide Image -->
     <div class="header-image-container">
@@ -127,6 +128,7 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tr><th>Crime</th><td><?= htmlspecialchars($criminalData['crime']) ?></td></tr>
             <tr><th>Status</th><td><?= htmlspecialchars($criminalData['status']) ?></td></tr>
             <tr><th>Location</th><td><?= htmlspecialchars($criminalData['location']) ?></td></tr>
+            <tr><th>Items Recovered</th><td><?= nl2br(htmlspecialchars($criminalData['items_recovered'])) ?></td></tr>
             <tr><th>Date of Capture</th><td><?= htmlspecialchars($criminalData['date_of_capture']) ?></td></tr>
             <tr><th>Time of Capture</th><td><?= htmlspecialchars($criminalData['time_of_capture']) ?></td></tr>
             <tr><th>Criminal Associates</th><td><?= nl2br(htmlspecialchars($criminalData['criminal_associates'])) ?></td></tr>
@@ -169,8 +171,8 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 <footer>
-        <p>© 11 Signal Battalion. All Rights Reserved.</p>
-    </footer>
+     <p>© 11 Signal Battalion. All Rights Reserved.</p>
+</footer>
 
     <!-- Bootstrap JS (Optional for functionality like dropdowns, modals, etc.) -->
     <script src="assets/js/script.js"></script>
