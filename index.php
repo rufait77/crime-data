@@ -107,16 +107,11 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="container mt-5">
     <h1 class="text-center">Criminal Database</h1>
-    <form method="POST" class="mb-4">
-        <select name="name" class="form-control" onchange="this.form.submit()">
-            <option value="">Select Criminal Name</option>
-            <?php foreach ($criminals as $criminal): ?>
-                <option value="<?= htmlspecialchars($criminal['name']) ?>" <?= isset($_POST['name']) && $_POST['name'] == $criminal['name'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($criminal['name']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </form>
+
+    <div class="mb-4 position-relative">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search criminal by name..." autocomplete="off">
+        <div id="suggestionBox" class="list-group position-absolute w-100 z-3" style="max-height: 200px; overflow-y: auto;"></div>
+    </div>
 
     <?php if ($criminalData): ?>
         <div class="text-center mb-4">
@@ -180,6 +175,54 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Bootstrap JS (Optional for functionality like dropdowns, modals, etc.) -->
     <script src="assets/js/script.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const input = document.getElementById("searchInput");
+        const box = document.getElementById("suggestionBox");
+
+        input.addEventListener("input", () => {
+            const query = input.value.trim();
+            if (query.length === 0) {
+                box.innerHTML = "";
+                return;
+            }
+
+            fetch("search_criminals.php?q=" + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    box.innerHTML = "";
+                    data.forEach(name => {
+                        const item = document.createElement("button");
+                        item.classList.add("list-group-item", "list-group-item-action");
+                        item.textContent = name;
+                        item.addEventListener("click", () => {
+                            input.value = name;
+                            box.innerHTML = "";
+
+                            // Submit form via POST
+                            const form = document.createElement("form");
+                            form.method = "POST";
+                            const hidden = document.createElement("input");
+                            hidden.type = "hidden";
+                            hidden.name = "name";
+                            hidden.value = name;
+                            form.appendChild(hidden);
+                            document.body.appendChild(form);
+                            form.submit();
+                        });
+                        box.appendChild(item);
+                    });
+                });
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!input.contains(e.target) && !box.contains(e.target)) {
+                box.innerHTML = "";
+            }
+        });
+    });
+</script>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.min.js" integrity="sha384-RuyvpeZCxMJCqVUGFI0Do1mQrods/hhxYlcVfGPOfQtPJh0JCw12tUAZ/Mv10S7D" crossorigin="anonymous"></script>
 </body>
