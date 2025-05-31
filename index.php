@@ -83,7 +83,7 @@ $carouselCriminals = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <a class="nav-link active" aria-current="page" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Incident Reports</a>
+                            <a class="nav-link" href="incident_report_generator.php">Incident Reports</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="dashboard.php">Dashboard</a>
