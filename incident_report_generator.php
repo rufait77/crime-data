@@ -13,8 +13,63 @@
             border: 1px solid #ccc;
         }
     </style>
+    <!-- Custom CSS -->
+    <link href="assets/css/style.css" rel="stylesheet">
+    <style>
+
+        body {
+            padding-bottom: 100px;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 1rem;
+            margin-top: 50px;
+            position: fixed;
+        }
+        .text-center p {
+            font-size: 1.5rem; /* Increase the font size */
+            font-weight: bold; /* Make the text bold */
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
 </head>
 <body>
+<!-- Navbar -->
+<nav class="navbar bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php"><h2>11 Signal Battallion Criminal Database</h2></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">11 Signal Battallion Criminal Database</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="index.php">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="incident_report_generator.php">Incident Reports</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.php">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logout.php">Log Out</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar Ends -->
 <div class="container mt-5">
     <h3 class="mb-4">Incident Report Generator</h3>
     <form id="reportForm">
@@ -30,8 +85,72 @@
         <button type="button" class="btn btn-secondary ms-2" onclick="copyToClipboard()">Copy to Clipboard</button>
     </form>
 
-    <div id="output"></div>
+    <!-- Button to manually enter report -->
+    <div class="mt-4">
+        <button class="btn btn-outline-primary" id="manualBtn">Enter Manually</button>
+    </div>
+
+    <!-- Manual entry section -->
+    <div id="manualSection" class="mt-3" style="display: none;">
+        <textarea id="manualInput" class="form-control mb-2" rows="10" placeholder="Write your report here manually..."></textarea>
+        <button class="btn btn-success" onclick="saveManualReport()">Save</button>
+    </div>
+
+    <!-- Output areas -->
+    <div id="output" class="mt-4"></div>
+    <div id="manualOutput" class="mt-4"></div>
 </div>
+
+<button type="button" class="btn btn-outline-primary mt-3" onclick="loadCriminals()">Add to Criminal Profile</button>
+
+<!-- Criminal List Container -->
+<div id="criminalList" class="mt-4"></div>
+
+<script>
+    function loadCriminals() {
+        fetch("get_criminal_list.php")
+            .then(res => res.json())
+            .then(data => {
+                let html = `<h5>Select a Criminal</h5><table class="table table-bordered"><thead><tr><th>Name</th><th>Crime</th><th>Date</th><th>Action</th></tr></thead><tbody>`;
+                data.forEach(c => {
+                    html += `<tr>
+                        <td>${c.name}</td>
+                        <td>${c.crime}</td>
+                        <td>${c.date_of_capture}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" onclick="saveReport(${c.id})">Save to Profile</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                document.getElementById("criminalList").innerHTML = html;
+            });
+    }
+
+    function saveReport(criminalId) {
+        const autoText = document.getElementById("output").textContent.trim();
+        const manualTextDiv = document.getElementById("manualOutput");
+        const manualText = manualTextDiv ? manualTextDiv.textContent.trim() : "";
+        const reportText = autoText || manualText;
+
+        if (!reportText) {
+            alert("Please generate or manually enter the report first.");
+            return;
+        }
+
+        fetch("save_incident_report.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: criminalId, report: reportText })
+        })
+        .then(res => res.text())
+        .then(response => {
+            alert(response);
+        });
+    }
+
+</script>
+
 
 <script>
     function formatAsBulletPoints(input) {
@@ -81,11 +200,48 @@ ${data.generated_by}`;
     });
 
     function copyToClipboard() {
-        const text = document.getElementById("output").textContent;
+        const text = document.getElementById("output").textContent || document.getElementById("manualOutput").textContent;
         navigator.clipboard.writeText(text).then(() => {
             alert("Copied to clipboard!");
         });
     }
+
+    document.getElementById("manualBtn").addEventListener("click", () => {
+        document.getElementById("manualSection").style.display = "block";
+        document.getElementById("manualInput").focus();
+    });
+
+    function saveManualReport() {
+        const manualText = document.getElementById("manualInput").value.replace(/^\s*\n/, '').trim();
+        if (manualText === "") {
+            alert("Please enter your report first.");
+            return;
+        }
+
+        // Optional: Clear previous preview
+        const existing = document.getElementById("manualDisplay");
+        if (existing) existing.remove();
+
+        // Display nicely formatted manual report below
+        const displayDiv = document.createElement("div");
+        displayDiv.id = "manualDisplay";
+        displayDiv.className = "mt-3";
+        displayDiv.innerHTML = `
+            <div id="manualOutput" style="white-space: pre-wrap; background: #f8f9fa; padding: 20px; border: 1px solid #ccc;">
+    ${manualText}
+            </div>
+            <button class="btn btn-secondary mt-2" onclick="copyToClipboard()">Copy to Clipboard</button>
+        `;
+        document.getElementById("manualSection").after(displayDiv);
+    }
+
+
 </script>
+
+<footer>
+     <p>© 11 Signal Battalion. All Rights Reserved.</p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.min.js" integrity="sha384-RuyvpeZCxMJCqVUGFI0Do1mQrods/hhxYlcVfGPOfQtPJh0JCw12tUAZ/Mv10S7D" crossorigin="anonymous"></script>
 </body>
 </html>

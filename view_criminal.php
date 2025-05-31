@@ -52,7 +52,12 @@ if (!$criminal) {
                     <p><strong>Date of Capture:</strong> <?= htmlspecialchars($criminal['date_of_capture']) ?></p>
                     <p><strong>Time of Capture:</strong> <?= htmlspecialchars($criminal['time_of_capture']) ?></p>
                     <p><strong>Criminal Associates:</strong> <?= nl2br(htmlspecialchars($criminal['criminal_associates'])) ?></p>
-                    <p><strong>Incident Report:</strong> <em>(To be added later)</em></p>
+                    <?php if (!empty($criminal['incident_report'])): ?>
+                        <div class="mt-4 p-3 border bg-light">
+                            <h5>Incident Report:</h5>
+                            <pre><?= htmlspecialchars($criminal['incident_report']) ?></pre>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
